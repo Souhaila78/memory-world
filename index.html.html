@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Memory World</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:linear-gradient(135deg,#b9e9ff,#ffd5e7);
+    min-height:100vh;
+    color:#333;
+}
+
+button{
+    border:0;
+    padding:12px 22px;
+    border-radius:25px;
+    background:white;
+    color:#5275d9;
+    font-size:16px;
+    cursor:pointer;
+    box-shadow:0 4px 10px #999;
+    transition:.25s;
+}
+
+button:hover{
+    transform:translateY(-4px);
+    box-shadow:0 7px 14px #888;
+}
+
+button:active{
+    transform:scale(.95);
+}
+
+header{
+    text-align:center;
+    padding:40px 15px 20px;
+    color:white;
+}
+
+header h1{
+    font-size:46px;
+    margin:0 0 10px;
+    text-shadow:0 3px 8px #777;
+}
+
+header p{
+    font-size:19px;
+}
+
+.games{
+    max-width:1100px;
+    margin:auto;
+    padding:20px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+    gap:18px;
+}
+
+.game{
+    background:rgba(255,255,255,.94);
+    border-radius:22px;
+    padding:22px;
+    text-align:center;
+    box-shadow:0 5px 15px #999;
+    transition:.3s;
+}
+
+.game:hover{
+    transform:translateY(-7px);
+}
+
+.game .icon{
+    font-size:43px;
+}
+
+.game h2{
+    font-size:20px;
+    margin:10px 0;
+}
+
+.game p{
+    color:#777;
+    min-height:38px;
+}
+
+#gameScreen{
+    display:none;
+    max-width:850px;
+    margin:auto;
+    padding:20px;
+    text-align:center;
+}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:15px;
+}
+
+#gameTitle{
+    color:white;
+    font-size:32px;
+    text-shadow:0 2px 5px #777;
+}
+
+.info{
+    background:white;
+    border-radius:18px;
+    padding:15px;
+    display:flex;
+    justify-content:space-around;
+    margin-bottom:15px;
+    font-weight:bold;
+    box-shadow:0 4px 10px #aaa;
+}
+
+#gameArea{
+    background:rgba(255,255,255,.9);
+    border-radius:25px;
+    padding:30px 20px;
+    min-height:330px;
+    box-shadow:0 5px 15px #999;
+}
+
+#message{
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+    min-height:30px;
+    margin:10px;
+}
+
+.levels{
+    margin:15px;
+}
+
+.levels button{
+    margin:4px;
+}
+
+.cards{
+    max-width:500px;
+    margin:auto;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+}
+
+.card{
+    height:85px;
+    border-radius:15px;
+    background:#708fe4;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:30px;
+    cursor:pointer;
+    user-select:none;
+}
+
+.card.open{
+    background:white;
+    color:#333;
+}
+
+.big{
+    font-size:60px;
+    font-weight:bold;
+    margin:25px;
+}
+
+.sequence{
+    font-size:42px;
+    font-weight:bold;
+    margin:25px;
+    word-break:break-word;
+}
+
+.options{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:12px;
+}
+
+.colorGrid{
+    display:grid;
+    grid-template-columns:repeat(3,80px);
+    justify-content:center;
+    gap:12px;
+}
+
+.colorBox{
+    width:80px;
+    height:80px;
+    border-radius:18px;
+    cursor:pointer;
+}
+
+.memoryGrid{
+    display:grid;
+    grid-template-columns:repeat(4,65px);
+    gap:8px;
+    justify-content:center;
+}
+
+.gridCell{
+    width:65px;
+    height:65px;
+    background:#7392e6;
+    border-radius:12px;
+    cursor:pointer;
+}
+
+.gridCell.selected{
+    background:#ffd85c;
+}
+
+input{
+    padding:12px;
+    border:1px solid #bbb;
+    border-radius:15px;
+    font-size:17px;
+    text-align:center;
+}
+
+footer{
+    color:white;
+    text-align:center;
+    padding:30px;
+}
+
+.hidden{
+    display:none;
+}
+
+@media(max-width:500px){
+
+    header h1{
+        font-size:35px;
+    }
+
+    .cards{
+        grid-template-columns:repeat(4,1fr);
+    }
+
+    .card{
+        height:70px;
+        font-size:24px;
+    }
+
+    .memoryGrid{
+        grid-template-columns:repeat(4,55px);
+    }
+
+    .gridCell{
+        width:55px;
+        height:55px;
+    }
+
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<!-- HOME -->
+
+<section id="home">
+
+<header>
+    <h1>🧠 Memory World</h1>
+    <p>Train your memory. Challenge yourself. Have fun!</p>
+
+    <div class="levels">
+        <button onclick="setDifficulty('easy')">Easy</button>
+        <button onclick="setDifficulty('medium')">Medium</button>
+        <button onclick="setDifficulty('hard')">Hard</button>
+    </div>
+</header>
+
+
+<div class="games">
+
+
+<div class="game">
+<div class="icon">🃏</div>
+<h2>Memory Cards</h2>
+<p>Find matching cards.</p>
+<button onclick="startGame(1)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">🔢</div>
+<h2>Remember Numbers</h2>
+<p>Remember a number.</p>
+<button onclick="startGame(2)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">🎨</div>
+<h2>Remember Colors</h2>
+<p>Remember the color.</p>
+<button onclick="startGame(3)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">🔷</div>
+<h2>Remember Pattern</h2>
+<p>Remember the pattern.</p>
+<button onclick="startGame(4)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">🔤</div>
+<h2>Remember Letters</h2>
+<p>Remember the letters.</p>
+<button onclick="startGame(5)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">🧩</div>
+<h2>Find the Pair</h2>
+<p>Find the matching pair.</p>
+<button onclick="startGame(6)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">👀</div>
+<h2>What Changed?</h2>
+<p>Find what changed.</p>
+<button onclick="startGame(7)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">🧠</div>
+<h2>Sequence Memory</h2>
+<p>Remember the sequence.</p>
+<button onclick="startGame(8)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">🔢</div>
+<h2>Number Sequence</h2>
+<p>Remember the order.</p>
+<button onclick="startGame(9)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">🖼️</div>
+<h2>Picture Memory</h2>
+<p>Remember the pictures.</p>
+<button onclick="startGame(10)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">🔍</div>
+<h2>Find the Difference</h2>
+<p>Find the different emoji.</p>
+<button onclick="startGame(11)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">🧱</div>
+<h2>Memory Grid</h2>
+<p>Remember the positions.</p>
+<button onclick="startGame(12)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">🃏</div>
+<h2>Card Sequence</h2>
+<p>Remember the order.</p>
+<button onclick="startGame(13)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">🔤</div>
+<h2>Word Memory</h2>
+<p>Remember the word.</p>
+<button onclick="startGame(14)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">🎯</div>
+<h2>Remember Position</h2>
+<p>Remember the position.</p>
+<button onclick="startGame(15)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">🧩</div>
+<h2>Matching Game</h2>
+<p>Match the emojis.</p>
+<button onclick="startGame(16)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">⚡</div>
+<h2>Quick Memory</h2>
+<p>Remember quickly.</p>
+<button onclick="startGame(17)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">🧠</div>
+<h2>Memory Challenge</h2>
+<p>Challenge your brain.</p>
+<button onclick="startGame(18)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">😊</div>
+<h2>Emoji Memory</h2>
+<p>Remember the emoji.</p>
+<button onclick="startGame(19)">Play</button>
+</div>
+
+
+<div class="game">
+<div class="icon">🏆</div>
+<h2>Ultimate Memory</h2>
+<p>The ultimate challenge.</p>
+<button onclick="startGame(20)">Play</button>
+</div>
+
+
+</div>
+
+
+<footer>
+<p>© 2026 Memory World</p>
+</footer>
+
+</section>
+
+
+
+<!-- GAME SCREEN -->
+
+<section id="gameScreen">
+
+<div class="topbar">
+<button onclick="goHome()">← Games</button>
+<button onclick="restartGame()">🔄 Restart</button>
+</div>
+
+<h2 id="gameTitle">Memory Game</h2>
+
+<div class="info">
+<span>⭐ Score: <span id="score">0</span></span>
+<span>🏆 Best: <span id="best">0</span></span>
+<span>⏱️ Time: <span id="time">30</span></span>
+</div>
+
+<div id="message"></div>
+
+<div id="gameArea"></div>
+
+</section>
+
+
+<script>
+
+
+let difficulty="easy";
+let currentGame=1;
+let score=0;
+let time=30;
+let timer=null;
+
+let correctAnswer="";
+let sequenceAnswer="";
+let playerSequence="";
+
+
+const names=[
+"",
+"Memory Cards",
+"Remember Numbers",
+"Remember Colors",
+"Remember Pattern",
+"Remember Letters",
+"Find the Pair",
+"What Changed?",
+"Sequence Memory",
+"Number Sequence",
+"Picture Memory",
+"Find the Difference",
+"Memory Grid",
+"Card Sequence",
+"Word Memory",
+"Remember Position",
+"Matching Game",
+"Quick Memory",
+"Memory Challenge",
+"Emoji Memory",
+"Ultimate Memory"
+];
+
+
+function setDifficulty(level){
+
+    difficulty=level;
+
+    alert("Difficulty: "+level);
+
+}
+
+
+function getTime(){
+
+    if(difficulty=="easy") return 40;
+    if(difficulty=="medium") return 30;
+    return 20;
+
+}
+
+
+function startTimer(){
+
+    clearInterval(timer);
+
+    time=getTime();
+
+    document.getElementById("time").textContent=time;
+
+    timer=setInterval(function(){
+
+        time--;
+
+        document.getElementById("time").textContent=time;
+
+        if(time<=0){
+
+            clearInterval(timer);
+
+            document.getElementById("message").textContent=
+            "⏰ Time is up!";
+
+        }
+
+    },1000);
+
+}
+
+
+function startGame(number){
+
+    currentGame=number;
+
+    score=0;
+
+    document.getElementById("home").style.display="none";
+
+    document.getElementById("gameScreen").style.display="block";
+
+    document.getElementById("gameTitle").textContent=names[number];
+
+    document.getElementById("score").textContent=0;
+
+    loadBest();
+
+    document.getElementById("message").textContent="";
+
+    startTimer();
+
+    if(number==1 || number==6 || number==16){
+
+        memoryCards();
+
+    }
+    else if(number==2 || number==9 || number==17){
+
+        numberGame();
+
+    }
+    else if(number==3){
+
+        colorGame();
+
+    }
+    else if(number==4){
+
+        patternGame();
+
+    }
+    else if(number==5 || number==14){
+
+        letterGame();
+
+    }
+    else if(number==7 || number==11){
+
+        changeGame();
+
+    }
+    else if(number==8 || number==13){
+
+        sequenceGame();
+
+    }
+    else if(number==10 || number==19){
+
+        emojiGame();
+
+    }
+    else if(number==12 || number==15){
+
+        gridGame();
+
+    }
+    else if(number==18 || number==20){
+
+        challengeGame();
+
+    }
+
+}
+
+
+function restartGame(){
+
+    startGame(currentGame);
+
+}
+
+
+function goHome(){
+
+    clearInterval(timer);
+
+    document.getElementById("gameScreen").style.display="none";
+
+    document.getElementById("home").style.display="block";
+
+}
+
+
+function addPoint(){
+
+    score++;
+
+    document.getElementById("score").textContent=score;
+
+    saveBest();
+
+}
+
+
+function saveBest(){
+
+    let key="memoryBest"+currentGame;
+
+    let old=Number(localStorage.getItem(key)||0);
+
+    if(score>old){
+
+        localStorage.setItem(key,score);
+
+    }
+
+    loadBest();
+
+}
+
+
+function loadBest(){
+
+    let key="memoryBest"+currentGame;
+
+    document.getElementById("best").textContent=
+    localStorage.getItem(key)||0;
+
+}
+
+
+/* 1 / 6 / 16 MEMORY CARDS */
+
+
+function memoryCards(){
+
+    let symbols=["🍎","🍎","🐱","🐱","⭐","⭐","🌸","🌸"];
+
+    if(difficulty=="hard"){
+
+        symbols=[
+        "🍎","🍎",
+        "🐱","🐱",
+        "⭐","⭐",
+        "🌸","🌸",
+        "🍀","🍀",
+        "🎈","🎈"
+        ];
+
+    }
+
+    symbols.sort(()=>Math.random()-.5);
+
+    let area=document.getElementById("gameArea");
+
+    area.innerHTML='<div class="cards"></div>';
+
+    let cards=document.querySelector(".cards");
+
+    let opened=[];
+
+    let matched=0;
+
+    symbols.forEach(symbol=>{
+
+        let card=document.createElement("div");
+
+        card.className="card";
+
+        card.textContent="?";
+
+        card.onclick=function(){
+
+            if(card.classList.contains("open")) return;
+
+            if(opened.length>=2) return;
+
+            card.classList.add("open");
+
+            card.textContent=symbol;
+
+            opened.push({
+                card:card,
+                symbol:symbol
+            });
+
+            if(opened.length==2){
+
+                if(opened[0].symbol==opened[1].symbol){
+
+                    addPoint();
+
+                    matched++;
+
+                    opened=[];
+
+                    if(matched==symbols.length/2){
+
+                        clearInterval(timer);
+
+                        document.getElementById("message").textContent=
+                        "🎉 You won! Score: "+score;
+
+                    }
+
+                }else{
+
+                    setTimeout(function(){
+
+                        opened.forEach(function(item){
+
+                            item.card.classList.remove("open");
+
+                            item.card.textContent="?";
+
+                        });
+
+                        opened=[];
+
+                    },700);
+
+                }
+
+            }
+
+        };
+
+        cards.appendChild(card);
+
+    });
+
+}
+
+
+/* NUMBERS */
+
+
+function numberGame(){
+
+    let length=5;
+
+    if(difficulty=="medium") length=6;
+
+    if(difficulty=="hard") length=7;
+
+    let number="";
+
+    for(let i=0;i<length;i++){
+
+        number+=Math.floor(Math.random()*10);
+
+    }
+
+    correctAnswer=number;
+
+    document.getElementById("gameArea").innerHTML=
+    '<div class="big">'+number+'</div>'+
+    '<p>Remember it!</p>'+
+    '<button onclick="hideNumber()">Hide</button>';
+
+}
+
+
+function hideNumber(){
+
+    document.getElementById("gameArea").innerHTML=
+    '<p>Write the number you remember:</p>'+
+    '<input id="answer" type="number">'+
+    '<br><br>'+
+    '<button onclick="checkNumber()">Check</button>';
+
+}
+
+
+function checkNumber(){
+
+    let answer=document.getElementById("answer").value;
+
+    if(answer==correctAnswer){
+
+        addPoint();
+
+        document.getElementById("message").textContent=
+        "🎉 Correct!";
+
+    }else{
+
+        document.getElementById("message").textContent=
+        "❌ The correct answer was "+correctAnswer;
+
+    }
+
+}
+
+
+/* COLORS */
+
+
+function colorGame(){
+
+    let colors=[
+    "red",
+    "blue",
+    "green",
+    "purple",
+    "orange",
+    "pink"
+    ];
+
+    let correct=
+    colors[Math.floor(Math.random()*colors.length)];
+
+    correctAnswer=correct;
+
+    document.getElementById("gameArea").innerHTML=
+    "<p>Remember this color:</p>"+
+    '<div class="colorBox" style="background:'+correct+
+    ';margin:25px auto;"></div>'+
+    '<button onclick="colorOptions()">Hide</button>';
+
+}
+
+
+function colorOptions(){
+
+    let colors=[
+    "red",
+    "blue",
+    "green",
+    "purple",
+    "orange",
+    "pink"
+    ];
+
+    let html="<p>Which color was it?</p><div class='options'>";
+
+    colors.forEach(function(color){
+
+        html+=
+        '<button onclick="checkColor(\''+color+'\')">'+
+        color+
+        '</button>';
+
+    });
+
+    html+="</div>";
+
+    document.getElementById("gameArea").innerHTML=html;
+
+}
+
+
+function checkColor(color){
+
+    if(color==correctAnswer){
+
+        addPoint();
+
+        document.getElementById("message").textContent=
+        "🎉 Correct!";
+
+    }else{
+
+        document.getElementById("message").textContent=
+        "❌ Wrong!";
+
+    }
+
+}
+
+
+/* PATTERN */
+
+
+function patternGame(){
+
+    let pattern=[];
+
+    for(let i=0;i<5;i++){
+
+        pattern.push(Math.floor(Math.random()*9));
+
+    }
+
+    correctAnswer=pattern.join("");
+
+    document.getElementById("gameArea").innerHTML=
+    '<div class="sequence">'+
+    pattern.join(" ")+"</div>"+
+    '<button onclick="hidePattern()">Hide</button>';
+
+}
+
+
+function hidePattern(){
+
+    document.getElementById("gameArea").innerHTML=
+    "<p>Write the pattern:</p>"+
+    '<input id="patternInput">'+
+    "<br><br>"+
+    '<button onclick="checkPattern()">Check</button>';
+
+}
+
+
+function checkPattern(){
+
+    let answer=
+    document.getElementById("patternInput").value.replace(/\s/g,"");
+
+    if(answer==correctAnswer){
+
+        addPoint();
+
+        document.getElementById("message").textContent=
+        "🎉 Correct!";
+
+    }else{
+
+        document.getElementById("message").textContent=
+        "❌ Wrong pattern!";
+
+    }
+
+}
+
+
+/* LETTERS / WORDS */
+
+
+function letterGame(){
+
+    let letters="ABCDEFGHJKLMNPQRSTUVWXYZ";
+
+    let length=difficulty=="easy"?4:
+              difficulty=="medium"?5:7;
+
+    let word="";
+
+    for(let i=0;i<length;i++){
+
+        word+=letters[Math.floor(Math.random()*letters.length)];
+
+    }
+
+    correctAnswer=word;
+
+    document.getElementById("gameArea").innerHTML=
+    '<div class="sequence">'+word+"</div>"+
+    '<button onclick="hideLetters()">Hide</button>';
+
+}
+
+
+function hideLetters(){
+
+    document.getElementById("gameArea").innerHTML=
+    "<p>Write what you remember:</p>"+
+    '<input id="letterInput">'+
+    "<br><br>"+
+    '<button onclick="checkLetters()">Check</button>';
+
+}
+
+
+function checkLetters(){
+
+    let answer=
+    document.getElementById("letterInput").value.toUpperCase();
+
+    if(answer==correctAnswer){
+
+        addPoint();
+
+        document.getElementById("message").textContent=
+        "🎉 Correct!";
+
+    }else{
+
+        document.getElementById("message").textContent=
+        "❌ Wrong!";
+
+    }
+
+}
+
+
+/* WHAT CHANGED / DIFFERENCE */
+
+
+function changeGame(){
+
+    let emojis=["🍎","🍌","🍇","🍓","🍊"];
+
+    document.getElementById("gameArea").innerHTML=
+    "<p>Remember these:</p>"+
+    '<div class="sequence">'+
+    emojis.join(" ")+"</div>"+
+    '<button onclick="changeItems()">Continue</button>';
+
+}
+
+
+function changeItems(){
+
+    let emojis=["🍎","🍌","🍇","🍓","🍊"];
+
+    let changed=Math.floor(Math.random()*5);
+
+    let html="<p>Which one changed?</p><div class='options'>";
+
+    emojis.forEach(function(emoji,index){
+
+        let show=emoji;
+
+        if(index==changed){
+
+            show="🍉";
+
+        }
+
+        html+=
+        '<button onclick="checkChange('+index+','+
+        changed+')">'+
+        '<span style="font-size:35px">'+
+        show+
+        "</span></button>";
+
+    });
+
+    html+="</div>";
+
+    document.getElementById("gameArea").innerHTML=html;
+
+}
+
+
+function checkChange(choice,correct){
+
+    if(choice==correct){
+
+        addPoint();
+
+        document.getElementById("message").textContent=
+        "🎉 Correct!";
+
+    }else{
+
+        document.getElementById("message").textContent=
+        "❌ Wrong!";
+
+    }
+
+}
+
+
+/* SEQUENCE */
+
+
+function sequenceGame(){
+
+    let items=["⭐","❤️","🌸","🐱","🍎"];
+
+    let length=difficulty=="easy"?3:
+              difficulty=="medium"?4:5;
+
+    let sequence=[];
+
+    for(let i=0;i<length;i++){
+
+        sequence.push(
+        items[Math.floor(Math.random()*items.length)]
+        );
+
+    }
+
+    sequenceAnswer=sequence.join("");
+
+    document.getElementById("gameArea").innerHTML=
+    '<div class="sequence">'+
+    sequence.join(" ")+"</div>"+
+    '<button onclick="hideSequence()">Hide</button>';
+
+}
+
+
+function hideSequence(){
+
+    playerSequence="";
+
+    let items=["⭐","❤️","🌸","🐱","🍎"];
+
+    let html=
+    "<p>Choose the emojis in the same order:</p>"+
+    '<div class="options">';
+
+    items.forEach(function(item){
+
+        html+=
+        '<button onclick="addSequence(\''+
+        item+
+        '\')">'+
+        '<span style="font-size:30px">'+
+        item+
+        "</span></button>";
+
+    });
+
+    html+="</div><p id='chosen'></p>";
+
+    document.getElementById("gameArea").innerHTML=html;
+
+}
+
+
+function addSequence(item){
+
+    playerSequence+=item;
+
+    document.getElementById("chosen").textContent=
+    playerSequence;
+
+    if(playerSequence.length>=sequenceAnswer.length){
+
+        if(playerSequence==sequenceAnswer){
+
+            addPoint();
+
+            document.getElementById("message").textContent=
+            "🎉 Perfect!";
+
+        }else{
+
+            document.getElementById("message").textContent=
+            "❌ Wrong sequence!";
+
+        }
+
+    }
+
+}
+
+
+/* EMOJI */
+
+
+function emojiGame(){
+
+    let emojis=["🐱","🐶","🦊","🐼","🐸","🐵"];
+
+    let correct=
+    emojis[Math.floor(Math.random()*emojis.length)];
+
+    correctAnswer=correct;
+
+    document.getElementById("gameArea").innerHTML=
+    '<div class="big">'+correct+"</div>"+
+    '<button onclick="hideEmoji()">Hide</button>';
+
+}
+
+
+function hideEmoji(){
+
+    let emojis=["🐱","🐶","🦊","🐼","🐸","🐵"];
+
+    let html="<p>Which emoji did you see?</p>"+
+    '<div class="options">';
+
+    emojis.forEach(function(emoji){
+
+        html+=
+        '<button onclick="checkEmoji(\''+
+        emoji+
+        '\')">'+
+        '<span style="font-size:35px">'+
+        emoji+
+        "</span></button>";
+
+    });
+
+    html+="</div>";
+
+    document.getElementById("gameArea").innerHTML=html;
+
+}
+
+
+function checkEmoji(emoji){
+
+    if(emoji==correctAnswer){
+
+        addPoint();
+
+        document.getElementById("message").textContent=
+        "🎉 Correct!";
+
+    }else{
+
+        document.getElementById("message").textContent=
+        "❌ Wrong!";
+
+    }
+
+}
+
+
+/* MEMORY GRID / POSITION */
+
+
+function gridGame(){
+
+    let total=16;
+
+    let correct=[];
+
+    let count=
+    difficulty=="easy"?3:
+    difficulty=="medium"?4:6;
+
+    while(correct.length<count){
+
+        let n=Math.floor(Math.random()*total);
+
+        if(!correct.includes(n)){
+
+            correct.push(n);
+
+        }
+
+    }
+
+    let html="<p>Remember the highlighted positions:</p>"+
+    '<div class="memoryGrid">';
+
+    for(let i=0;i<total;i++){
+
+        let active=correct.includes(i);
+
+        html+=
+        '<div class="gridCell" '+
+        (active?'style="background:#ffd85c"':'')+
+        "></div>";
+
+    }
+
+    html+="</div>"+
+    "<br><button onclick='hideGrid()'>Hide</button>";
+
+    document.getElementById("gameArea").innerHTML=html;
+
+    window.correctGrid=correct;
+
+}
+
+
+function hideGrid(){
+
+    let total=16;
+
+    let html=
+    "<p>Select the positions you remember:</p>"+
+    '<div class="memoryGrid">';
+
+    for(let i=0;i<total;i++){
+
+        html+=
+        '<div class="gridCell" onclick="selectGrid(this,'+
+        i+')"></div>';
+
+    }
+
+    html+="</div><br>"+
+    '<button onclick="checkGrid()">Check</button>';
+
+    document.getElementById("gameArea").innerHTML=html;
+
+    window.playerGrid=[];
+
+}
+
+
+function selectGrid(element,index){
+
+    element.classList.toggle("selected");
+
+    if(window.playerGrid.includes(index)){
+
+        window.playerGrid=
+        window.playerGrid.filter(x=>x!=index);
+
+    }else{
+
+        window.playerGrid.push(index);
+
+    }
+
+}
+
+
+function checkGrid(){
+
+    let a=[...window.correctGrid].sort((a,b)=>a-b);
+
+    let b=[...window.playerGrid].sort((a,b)=>a-b);
+
+    if(JSON.stringify(a)==JSON.stringify(b)){
+
+        addPoint();
+
+        document.getElementById("message").textContent=
+        "🎉 Perfect memory!";
+
+    }else{
+
+        document.getElementById("message").textContent=
+        "❌ Not quite!";
+
+    }
+
+}
+
+
+/* CHALLENGE */
+
+
+function challengeGame(){
+
+    let length=
+    difficulty=="easy"?3:
+    difficulty=="medium"?4:6;
+
+    let number="";
+
+    for(let i=0;i<length;i++){
+
+        number+=Math.floor(Math.random()*10);
+
+    }
+
+    correctAnswer=number;
+
+    document.getElementById("gameArea").innerHTML=
+    '<div class="big">'+number+"</div>"+
+    "<p>Remember as much as you can!</p>"+
+    '<button onclick="hideChallenge()">Hide</button>';
+
+}
+
+
+function hideChallenge(){
+
+    document.getElementById("gameArea").innerHTML=
+    "<p>What was the number?</p>"+
+    '<input id="challengeInput" type="number">'+
+    "<br><br>"+
+    '<button onclick="checkChallenge()">Check</button>';
+
+}
+
+
+function checkChallenge(){
+
+    let answer=
+    document.getElementById("challengeInput").value;
+
+    if(answer==correctAnswer){
+
+        addPoint();
+
+        document.getElementById("message").textContent=
+        "🏆 Amazing memory!";
+
+    }else{
+
+        document.getElementById("message").textContent=
+        "❌ The number was "+correctAnswer;
+
+    }
+
+}
+
+
+</script>
+
+</body>
+</html>
